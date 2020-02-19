@@ -339,6 +339,8 @@ def runModels(ModelFuncPointer,
                 save_best_only=True)
             ]
 
+    print("Run fit generator")
+
     history = model.fit_generator(TrainGenerator,
         steps_per_epoch= epochSteps,
         epochs=numEpochs,
@@ -350,6 +352,7 @@ def runModels(ModelFuncPointer,
         workers=nCPU,
         )
 
+    print("Writing the network")
     # Write the network
     if(network != None):
         ##serialize model to JSON
@@ -357,6 +360,7 @@ def runModels(ModelFuncPointer,
         with open(network[0], "w") as json_file:
             json_file.write(model_json)
 
+    print("Load json and create model ...")
     # Load json and create model
     if(network != None):
         jsonFILE = open(network[0],"r")
@@ -364,13 +368,20 @@ def runModels(ModelFuncPointer,
         jsonFILE.close()
         model=model_from_json(loadedModel)
         model.load_weights(network[1])
+        print("... Loading ok")
     else:
         print("Error: model and weights not loaded")
         sys.exit(1)
 
+    print("Running predictions")
     x,y = TestGenerator.__getitem__(0)
-    predictions = model.predict(x)
+    predictions = model.predict(x,
+                                verbose=1,
+                                max_queue_size=nCPU,
+                                workers=nCPU,
+                                use_multiprocessing=True)
 
+    print("Generating output")
     history.history['loss'] = np.array(history.history['loss'])
     history.history['val_loss'] = np.array(history.history['val_loss'])
     history.history['predictions'] = np.array(predictions)
