@@ -324,7 +324,7 @@ def runModels(ModelFuncPointer,
     from tensorflow.compat.v1 import Session
     config = ConfigProto()
     config.gpu_options.allow_growth = True
-    sess = Session(config=config)
+    Session(config=config)
     ###
 
     if(resultsFile == None):
@@ -348,17 +348,15 @@ def runModels(ModelFuncPointer,
                 save_best_only=True)
             ]
 
+
     print("Run fit generator")
 
     history = model.fit(TrainGenerator,
-                        steps_per_epoch= epochSteps,
-                        epochs=numEpochs,
-                        validation_data=ValidationGenerator,
-                        use_multiprocessing=True,
-                        callbacks=callbacks_list,
-                        max_queue_size=nCPU,
-                        workers=nCPU,
-    )
+        steps_per_epoch=epochSteps,
+        epochs=numEpochs,
+        validation_data=ValidationGenerator,
+        use_multiprocessing=False,
+        callbacks=callbacks_list)
 
     print("Writing the network")
     # Write the network
@@ -383,11 +381,11 @@ def runModels(ModelFuncPointer,
 
     print("Running predictions")
     x,y = TestGenerator.__getitem__(0)
-    predictions = model.predict(x,
-                                verbose=1,
-                                max_queue_size=nCPU,
-                                workers=nCPU,
-                                use_multiprocessing=True)
+    predictions = model.predict(x)
+                                # verbose=1,
+                                # max_queue_size=nCPU,
+                                # workers=nCPU,
+                                # use_multiprocessing=True)
 
     print("Generating output")
     history.history['loss'] = np.array(history.history['loss'])
